@@ -8,9 +8,12 @@ from homeassistant.core import HomeAssistant
 
 from .const import CONF_CHAT_ID, CONF_MENUS, CONF_NOTIFY_ENTITY
 
+KEYBOARD_REPLY = "reply"
+KEYBOARD_INLINE = "inline"
+
 
 class MenuManager:
-    """Manage Telegram reply keyboards."""
+    """Manage Telegram reply and inline keyboards."""
 
     def __init__(self, hass: HomeAssistant, entry: ConfigEntry) -> None:
         self.hass = hass
@@ -29,27 +32,26 @@ class MenuManager:
         return str(self.entry.data[CONF_CHAT_ID])
 
     async def show_menu(self, menu_name: str, chat_id: str | None = None) -> None:
-        """Show a configured reply keyboard."""
+        """Show a configured Telegram keyboard."""
         menu = self.menus.get(menu_name)
         if not isinstance(menu, dict):
             raise ValueError(f"Unknown Telegram menu: {menu_name}")
 
-        keyboard = []
-        for row in menu.get("rows", []):
-            rendered_row = []
-            for button in row:
-                if isinstance(button, dict):
-                    rendered_row.append(str(button.get("command", button.get("label", ""))))
-                else:
-                    rendered_row.append(str(button))
-            keyboard.append(rendered_row)
-
+        keyboard_type = menu.get("keyboard_type", KEYBOARD_REPLY)
         data = {
             "entity_id": self.notify_entity,
             "chat_id": [str(chat_id or self.default_chat_id)],
             "message": menu.get("message", "Bitte auswählen:"),
-            "keyboard": keyboard,
         }
+
+        if keyboard_type == KEYBOARD_INLINE:
+            data["inline_keyboard"] = self._render_inline_keyboard(menu)
+        else:
+            # Important: Telegram Reply Keyboard buttons send their visible
+            # text back as a message. Therefore the command itself must be
+            # displayed if existing telegram_command automations are to keep
+            # working unchanged.
+            data["keyboard"] = self._render_reply_keyboard(menu)
 
         await self.hass.services.async_call(
             "telegram_bot",
@@ -58,13 +60,53 @@ class MenuManager:
             blocking=True,
         )
 
+    @staticmethod
+    def _render_reply_keyboard(menu: dict[str, Any]) -> list[list[str]]:
+        """Render a Telegram Reply Keyboard."""
+        keyboard: list[list[str]] = []
+
+        for row in menu.get("rows", []):
+            rendered_row: list[str] = []
+            for button in row:
+                if isinstance(button, dict):
+                    command = str(button.get("command", "")).strip()
+                    if command:
+                        rendered_row.append(command)
+                elif isinstance(button, str) and button.strip():
+                    rendered_row.append(button.strip())
+            if rendered_row:
+                keyboard.append(rendered_row)
+
+        return keyboard
+
+    @staticmethod
+    def _render_inline_keyboard(menu: dict[str, Any]) -> list[list[list[str]]]:
+        """Render a Telegram Inline Keyboard with separate label and command."""
+        keyboard: list[list[list[str]]] = []
+
+        for row in menu.get("rows", []):
+            rendered_row: list[list[str]] = []
+            for button in row:
+                if isinstance(button, dict):
+                    command = str(button.get("command", "")).strip()
+                    label = str(button.get("label", command)).strip()
+                    if command and label:
+                        rendered_row.append([label, command])
+                elif isinstance(button, str) and button.strip():
+                    command = button.strip()
+                    rendered_row.append([command, command])
+            if rendered_row:
+                keyboard.append(rendered_row)
+
+        return keyboard
+
     async def hide_menu(self, chat_id: str | None = None) -> None:
-        """Remove the Telegram reply keyboard."""
+        """Remove the Telegram Reply Keyboard."""
         data = {
             "entity_id": self.notify_entity,
             "chat_id": [str(chat_id or self.default_chat_id)],
             "message": "Tastatur ausgeblendet.",
-            "keyboard": [["/hide_keyboard"]],
+            "keyboard": [],
         }
 
         await self.hass.services.async_call(
