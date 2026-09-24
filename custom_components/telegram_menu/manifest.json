@@ -1,6 +1,6 @@
 {
   "domain": "telegram_menu",
-  "name": "Telegram Menu",
+  "name": "Telegram Menu via Keyboard",
   "version": "0.3.0",
   "config_flow": true,
   "documentation": "https://github.com/The-Fox23/telegram-menu-via-keybord",
