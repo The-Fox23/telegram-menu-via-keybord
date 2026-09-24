@@ -70,7 +70,7 @@ For this reason, the integration deliberately keeps the configured `command` as 
 
 Example:
 
-```json
+```yaml
 alias: Telegram - Aktion bei Tastendruck
 description: Reagiert auf den Tastendruck und führt je nach Befehl eine Aktion aus
 triggers:
