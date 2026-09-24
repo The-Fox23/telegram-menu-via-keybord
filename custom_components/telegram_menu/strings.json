@@ -12,12 +12,12 @@
         "data_description": {
           "notify_entity": "The existing notify.telegram_bot_* entity used by your Telegram integration.",
           "chat_id": "Telegram chat ID that should receive the keyboard.",
-          "menus": "Define menus, rows and commands as JSON. Commands must start with /."
+          "menus": "Define menus and rows as JSON. Use keyboard_type 'reply' for normal Telegram commands or 'inline' for separate button labels and callback commands."
         }
       }
     },
     "error": {
-      "invalid_menus": "The menu JSON is invalid or contains an invalid command/submenu."
+      "invalid_menus": "The menu JSON is invalid. keyboard_type must be 'reply' or 'inline', and commands must start with /."
     }
   }
 }
