@@ -1,0 +1,23 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Telegram-Menü",
+        "description": "Konfiguriere das vorhandene Telegram-Ziel, die Chat-ID und deine Menüs.",
+        "data": {
+          "notify_entity": "Telegram-Notify-Entity",
+          "chat_id": "Standard-Chat-ID",
+          "menus": "Menüs (JSON)"
+        },
+        "data_description": {
+          "notify_entity": "Die vorhandene notify.telegram_bot_* Entity deiner Telegram-Integration.",
+          "chat_id": "Telegram-Chat-ID, an die die Tastatur gesendet wird.",
+          "menus": "Definiere Menüs, Zeilen und Commands als JSON. Commands müssen mit / beginnen."
+        }
+      }
+    },
+    "error": {
+      "invalid_menus": "Das Menü-JSON ist ungültig oder enthält einen ungültigen Command bzw. ein unbekanntes Untermenü."
+    }
+  }
+}
