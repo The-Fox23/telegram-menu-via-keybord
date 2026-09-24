@@ -39,6 +39,22 @@ The `command` value is what Telegram sends when the button is pressed. The curre
 
 ## Installation
 
+Installation über HACS
+Benutzerdefiniertes Repository
+Da dieses Projekt aktuell nicht Bestandteil des offiziellen HACS-Repository-Katalogs ist, muss es als benutzerdefiniertes Repository hinzugefügt werden.
+
+HACS in Home Assistant öffnen
+Oben rechts auf die drei Punkte klicken
+Benutzerdefinierte Repositories auswählen
+Folgendes Repository eintragen:
+https://github.com/The-Fox23/telegram](https://github.com/The-Fox23/telegram-menu-via-keybord
+Kategorie:
+Integration
+Hinzufügen auswählen
+Nach DIVERA 24/7 with Server URL suchen
+Integration herunterladen
+Home Assistant vollständig neu starten
+
 For development, copy `custom_components/telegram_menu` to:
 
 ```text
