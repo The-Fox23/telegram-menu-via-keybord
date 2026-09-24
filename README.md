@@ -50,7 +50,7 @@ Da dieses Projekt aktuell nicht Bestandteil des offiziellen HACS-Repository-Kata
 4. Folgendes Repository eintragen:
 
 ```text
-https://github.com/The-Fox23/divera-hacs-custom-server](https://github.com/The-Fox23/telegram-menu-via-keybord
+https://github.com/The-Fox23/telegram-menu-via-keybord
 ```
 
 5. Kategorie:
