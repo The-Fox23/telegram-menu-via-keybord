@@ -69,6 +69,16 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     return True
 
 
+async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:
+    """Migrate older Telegram Menu config entries."""
+    if config_entry.version < 3:
+        hass.config_entries.async_update_entry(
+            config_entry,
+            version=3,
+        )
+    return True
+
+
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a Telegram Menu config entry."""
     hass.data[DOMAIN].pop(entry.entry_id, None)
