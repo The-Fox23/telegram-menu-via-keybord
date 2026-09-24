@@ -1,80 +1,90 @@
 # Telegram Menu for Home Assistant
 
-Custom Home Assistant integration for building reusable Telegram reply keyboards.
+Custom Home Assistant integration for managing Telegram menus on top of the official Home Assistant `telegram_bot` integration.
 
-## Features
+## What this integration does
 
-- `/commands` as Telegram reply-keyboard buttons
-- Arbitrary button rows
-- Submenus
-- Home Assistant UI/config flow
-- Uses your existing Home Assistant Telegram Bot integration
-- Does **not** replace or modify `telegram_command` events
+- Uses the existing Home Assistant `telegram_bot` integration
+- Does **not** replace or modify Telegram polling/webhooks
+- Does **not** replace `telegram_command` events
+- Supports normal Telegram **Reply Keyboards**
+- Supports Telegram **Inline Keyboards**
+- Allows multiple rows and buttons
 - Provides `telegram_menu.show` and `telegram_menu.hide` actions
 
-## Important
+## Important: Reply Keyboard compatibility
 
-This integration is a menu/keyboard layer. Your existing Telegram command automations remain responsible for what `/Haustuer`, `/Garage_Gross`, etc. actually do.
+A normal Telegram Reply Keyboard sends the **visible button text** back to Telegram as a message.
 
-### Example
+That means an existing automation such as:
 
-A menu can be configured as:
+```yaml
+triggers:
+  - trigger: event
+    event_type: telegram_command
+    event_data:
+      command: /Haustuer
+```
+
+can only continue to work unchanged when the Reply Keyboard button itself contains `/Haustuer`.
+
+For this reason, the integration deliberately keeps the configured `command` as the visible text for a **Reply Keyboard**.
+
+Example:
 
 ```json
 {
   "main": {
     "message": "🏠 Bitte Funktion auswählen:",
+    "keyboard_type": "reply",
     "rows": [
       [
         {"label": "🚪 Haustür", "command": "/Haustuer"},
-        {"label": "🚗 Garage Groß", "command": "/Garage_Gross"},
-        {"label": "🚗 Garage Klein", "command": "/Garage_Klein"}
+        {"label": "🚗 Garage Groß", "command": "/Garage_Gross"}
       ]
     ]
   }
 }
 ```
 
-The `command` value is what Telegram sends when the button is pressed. The current implementation renders the command itself as the button text; label/submenu rendering will be expanded in the next development step.
+The `label` is stored for the menu definition, but a Reply Keyboard displays `command` so that existing `telegram_command` automations remain compatible.
 
+## Inline Keyboard
 
-## Installation über HACS
+Inline keyboards can use a separate friendly label and command/callback value:
 
-## Benutzerdefiniertes Repository
-
-Da dieses Projekt aktuell nicht Bestandteil des offiziellen HACS-Repository-Katalogs ist, muss es als benutzerdefiniertes Repository hinzugefügt werden.
-
-1. HACS in Home Assistant öffnen
-2. Oben rechts auf die **drei Punkte** klicken
-3. **Benutzerdefinierte Repositories** auswählen
-4. Folgendes Repository eintragen:
-
-```text
-https://github.com/The-Fox23/telegram-menu-via-keybord
+```json
+{
+  "main": {
+    "message": "🏠 Bitte Funktion auswählen:",
+    "keyboard_type": "inline",
+    "rows": [
+      [
+        {"label": "🚪 Haustür", "command": "/Haustuer"},
+        {"label": "🚗 Garage Groß", "command": "/Garage_Gross"}
+      ]
+    ]
+  }
+}
 ```
 
-5. Kategorie:
+The visible button text is the configured `label`.
 
-```text
-Integration
-```
+**Note:** Inline keyboard callback handling will be expanded in a later development step. The current implementation prepares the inline keyboard structure while keeping the existing Telegram integration untouched.
 
-6. **Hinzufügen** auswählen
-7. Nach **DIVERA 24/7 with Server URL** suchen
-8. Integration herunterladen
-9. Home Assistant vollständig neu starten
+## Configuration
 
+The current config flow asks for:
 
-For HACS:
+1. The existing Telegram notify entity
+2. A default Telegram chat ID
+3. Menu definitions
 
-1. Create a GitHub repository from this project.
-2. In HACS, add the repository as a custom repository.
-3. Select category `Integration`.
-4. Install `Telegram Menu`.
-5. Restart Home Assistant.
-6. Add **Telegram Menu** from Settings → Devices & services.
+The menu definition is currently entered as JSON. A visual menu editor is planned.
 
-## Action example
+## Actions
+
+Show a menu:
 
 ```yaml
 action:
@@ -83,11 +93,18 @@ action:
       menu: main
 ```
 
+Hide the Reply Keyboard:
+
+```yaml
+action:
+  - action: telegram_menu.hide
+```
+
 If more than one Telegram Menu config entry exists, specify its `entry_id`.
 
-## Existing Telegram commands
+## Existing Telegram automations remain usable
 
-Your existing automation can remain like:
+For Reply Keyboard commands, existing automations can remain unchanged:
 
 ```yaml
 triggers:
@@ -110,15 +127,25 @@ triggers:
     id: garage_klein
 ```
 
-The Telegram Menu integration does not consume, replace or rename these commands.
+The Telegram Menu integration does not consume, rename or replace these commands.
+
+## HACS installation
+
+This repository can be added as a custom HACS repository:
+
+```
+https://github.com/The-Fox23/telegram-menu-via-keybord
+```
+
+Select category **Integration**, install **Telegram Menu**, and restart Home Assistant.
 
 ## Roadmap
 
 - Visual menu editor instead of JSON
-- True label/command separation
-- Submenu buttons with automatic menu navigation
+- Submenu navigation
 - Back/Home buttons
-- Optional resize/one-time keyboard settings
+- Direct Home Assistant service actions
+- Inline callback query handling
 - Per-chat menus
 - Menu visibility and authorization rules
 - Tests and CI
