@@ -39,11 +39,29 @@ A normal Telegram Reply Keyboard sends the **visible button text** back to Teleg
 That means an existing automation such as:
 
 ```yaml
+alias: Telegram - Tastatur anzeigen
+description: Zeigt die Telegram-Tastatur an
 triggers:
   - trigger: event
     event_type: telegram_command
     event_data:
-      command: /Haustuer
+      command: /tastatur
+  conditions: []
+actions:
+  - action: telegram_bot.send_message
+    data:
+      chat_id:
+        - xxxxxxxxx
+      message: '🏠 Bitte Funktion auswählen:'
+      keyboard:
+        - ' /Garage_Gross, /Garage_Klein'
+        - ' /Balkon_auf, /Terrasse_auf'
+        - ' /Haustuer, /spare'
+      entity_id:
+        - notify.telegram_bot_xxxxxxxxx_chat id
+      parse_mode: html
+mode: single
+
 ```
 
 can only continue to work unchanged when the Reply Keyboard button itself contains `/Haustuer`.
@@ -53,18 +71,70 @@ For this reason, the integration deliberately keeps the configured `command` as 
 Example:
 
 ```json
-{
-  "main": {
-    "message": "🏠 Bitte Funktion auswählen:",
-    "keyboard_type": "reply",
-    "rows": [
-      [
-        {"label": "🚪 Haustür", "command": "/Haustuer"},
-        {"label": "🚗 Garage Groß", "command": "/Garage_Gross"}
-      ]
-    ]
-  }
-}
+alias: Telegram - Aktion bei Tastendruck
+description: Reagiert auf den Tastendruck und führt je nach Befehl eine Aktion aus
+triggers:
+  - trigger: event
+    event_type: telegram_command
+    event_data:
+      command: /Haustuer
+    id: haustuer
+  - trigger: event
+    event_type: telegram_command
+    event_data:
+      command: /Garage_Gross
+    id: garage_gross
+  - trigger: event
+    event_type: telegram_command
+    event_data:
+      command: /Garage_Klein
+    id: garage_klein
+conditions: []
+actions:
+  - choose:
+      - conditions:
+          - condition: trigger
+            id: haustuer
+        sequence:
+          - action: homematicip_local.switch_set_on_time
+            target:
+              entity_id: switch.hm_lc_sw4_wm_neq1635462_ch2
+            data:
+              on_time: 1
+          - action: telegram_bot.send_message
+            data:
+              chat_id:
+                - xxxxxxxx
+              message: 🚪 Haustür-Aktion erfolgreich ausgeführt!
+      - conditions:
+          - condition: trigger
+            id: garage_gross
+        sequence:
+          - action: homematicip_local.switch_set_on_time
+            target:
+              entity_id: switch.hm_lc_sw4_wm_neq1635462_ch1
+            data:
+              on_time: 1
+          - action: telegram_bot.send_message
+            data:
+              chat_id:
+                - xxxxxxx
+              message: 🚗 Garage Groß wurde ausgelöst!
+      - conditions:
+          - condition: trigger
+            id: garage_klein
+        sequence:
+          - action: homematicip_local.switch_set_on_time
+            target:
+              entity_id: switch.4_fachaktor_garage_klein_ch1
+            data:
+              on_time: 1
+          - action: telegram_bot.send_message
+            data:
+              chat_id:
+                - xxxxxxxxx
+              message: 🚗 Garage Klein wurde ausgelöst!
+mode: single
 ```
 
 The `label` is stored for the menu definition, but a Reply Keyboard displays `command` so that existing `telegram_command` automations remain compatible.
