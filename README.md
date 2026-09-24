@@ -37,31 +37,33 @@ A menu can be configured as:
 
 The `command` value is what Telegram sends when the button is pressed. The current implementation renders the command itself as the button text; label/submenu rendering will be expanded in the next development step.
 
-## Installation
 
-Installation über HACS
-Benutzerdefiniertes Repository
+## Installation über HACS
+
+## Benutzerdefiniertes Repository
+
 Da dieses Projekt aktuell nicht Bestandteil des offiziellen HACS-Repository-Katalogs ist, muss es als benutzerdefiniertes Repository hinzugefügt werden.
 
-HACS in Home Assistant öffnen
-Oben rechts auf die drei Punkte klicken
-Benutzerdefinierte Repositories auswählen
-Folgendes Repository eintragen:
-https://github.com/The-Fox23/telegram](https://github.com/The-Fox23/telegram-menu-via-keybord
-Kategorie:
-Integration
-Hinzufügen auswählen
-Nach DIVERA 24/7 with Server URL suchen
-Integration herunterladen
-Home Assistant vollständig neu starten
-
-For development, copy `custom_components/telegram_menu` to:
+1. HACS in Home Assistant öffnen
+2. Oben rechts auf die **drei Punkte** klicken
+3. **Benutzerdefinierte Repositories** auswählen
+4. Folgendes Repository eintragen:
 
 ```text
-/config/custom_components/telegram_menu/
+https://github.com/The-Fox23/divera-hacs-custom-server](https://github.com/The-Fox23/telegram-menu-via-keybord
 ```
 
-Then restart Home Assistant.
+5. Kategorie:
+
+```text
+Integration
+```
+
+6. **Hinzufügen** auswählen
+7. Nach **DIVERA 24/7 with Server URL** suchen
+8. Integration herunterladen
+9. Home Assistant vollständig neu starten
+
 
 For HACS:
 
