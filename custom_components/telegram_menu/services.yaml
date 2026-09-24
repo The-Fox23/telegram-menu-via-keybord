@@ -1,0 +1,34 @@
+show:
+  name: Show menu
+  description: Show a configured Telegram reply keyboard.
+  fields:
+    entry_id:
+      name: Config entry
+      description: Optional config entry ID. Required if multiple Telegram Menu entries exist.
+      selector:
+        text:
+    menu:
+      name: Menu
+      description: Name of the menu to display.
+      required: true
+      default: main
+      selector:
+        text:
+    chat_id:
+      name: Chat ID
+      description: Optional Telegram chat ID. Defaults to the configured chat ID.
+      selector:
+        text:
+
+hide:
+  name: Hide menu
+  description: Send a message that replaces the current reply keyboard.
+  fields:
+    entry_id:
+      name: Config entry
+      selector:
+        text:
+    chat_id:
+      name: Chat ID
+      selector:
+        text:

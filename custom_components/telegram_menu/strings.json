@@ -1,0 +1,23 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Telegram Menu",
+        "description": "Configure the Telegram notification target, chat ID and menus.",
+        "data": {
+          "notify_entity": "Telegram notify entity",
+          "chat_id": "Default chat ID",
+          "menus": "Menus (JSON)"
+        },
+        "data_description": {
+          "notify_entity": "The existing notify.telegram_bot_* entity used by your Telegram integration.",
+          "chat_id": "Telegram chat ID that should receive the keyboard.",
+          "menus": "Define menus, rows and commands as JSON. Commands must start with /."
+        }
+      }
+    },
+    "error": {
+      "invalid_menus": "The menu JSON is invalid or contains an invalid command/submenu."
+    }
+  }
+}

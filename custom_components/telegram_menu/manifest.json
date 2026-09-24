@@ -1,0 +1,16 @@
+{
+  "domain": "telegram_menu",
+  "name": "Telegram Menu",
+  "version": "0.1.0",
+  "config_flow": true,
+  "documentation": "https://github.com/YOUR_GITHUB_USER/telegram-menu",
+  "issue_tracker": "https://github.com/YOUR_GITHUB_USER/telegram-menu/issues",
+  "codeowners": [
+    "@YOUR_GITHUB_USER"
+  ],
+  "integration_type": "service",
+  "iot_class": "local_push",
+  "dependencies": [
+    "telegram_bot"
+  ]
+}
