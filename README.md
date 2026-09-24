@@ -154,7 +154,7 @@ The Telegram Menu integration does not consume, rename or replace these commands
 This repository can be added as a custom HACS repository:
 
 ```
-https://github.com/The-Fox23/telegram-menu-via-keybord
+https://github.com/The-Fox23/telegram-menu-via-keyboard
 ```
 
 Select category **Integration**, install **Telegram Menu**, and restart Home Assistant.
