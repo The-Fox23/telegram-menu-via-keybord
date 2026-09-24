@@ -12,6 +12,26 @@ Custom Home Assistant integration for managing Telegram menus on top of the offi
 - Allows multiple rows and buttons
 - Provides `telegram_menu.show` and `telegram_menu.hide` actions
 
+## Telegram Bot: Privacy Mode deaktivieren
+
+Damit der Telegram Bot die Nachrichten bzw. Befehle aus einer normalen **Reply Keyboard** zuverlässig an Home Assistant weitergeben kann, muss bei deinem Bot in **BotFather** der **Privacy Mode** deaktiviert werden.
+
+### Privacy Mode auf Disable stellen
+
+1. Telegram öffnen und **@BotFather** aufrufen.
+2. Den Befehl `/mybots` senden.
+3. Deinen Home-Assistant-Telegram-Bot auswählen.
+4. **Bot Settings** öffnen.
+5. **Group Privacy** auswählen.
+6. **Turn off** auswählen bzw. den Privacy Mode auf **Disable** stellen.
+7. Danach den Bot in Home Assistant weiter wie gewohnt verwenden.
+
+Die Einstellung ist besonders wichtig, wenn der Bot in einer **Telegram-Gruppe** verwendet wird. Bei aktiviertem Privacy Mode verarbeitet Telegram in Gruppen nur bestimmte Nachrichten und Befehle. Dadurch können Nachrichten aus der Reply Keyboard bzw. die erwarteten `telegram_command`-Events unter Umständen nicht bei Home Assistant ankommen.
+
+**Empfehlung:** Stelle den Privacy Mode bereits vor dem ersten Test des Menüs auf **Disable**, damit die Fehlersuche nicht durch die Telegram-Bot-Einstellungen erschwert wird.
+
+> Hinweis: Diese Einstellung wird in **BotFather** vorgenommen und nicht in dieser Home-Assistant-Integration. Die offizielle `telegram_bot`-Integration von Home Assistant bleibt unverändert.
+
 ## Important: Reply Keyboard compatibility
 
 A normal Telegram Reply Keyboard sends the **visible button text** back to Telegram as a message.
