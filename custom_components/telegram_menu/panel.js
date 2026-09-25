@@ -1,17 +1,179 @@
 class TelegramMenuPanel extends HTMLElement {
   set hass(value) {
     this._hass = value;
+    if (!this._loaded) {
+      this._loadConfig();
+    }
+  }
+
+  set panel(value) {
+    this._panelConfig = value;
     this._render();
   }
 
   connectedCallback() {
+    this._render();
+    this._loadConfig();
+  }
+
+  async _loadConfig() {
+    if (this._loading || !this._hass?.connection) return;
+    this._loading = true;
+
+    try {
+      const response = await this._hass.connection.sendMessagePromise({
+        type: "telegram_menu/get_config",
+      });
+      this._config = response;
+      this._loaded = true;
+      this._render();
+    } catch (error) {
+      this._error = error?.message || "Konfiguration konnte nicht geladen werden.";
+      this._render();
+    } finally {
+      this._loading = false;
+    }
+  }
+
+  async _saveConfig() {
+    if (!this._hass?.connection) return;
+
+    const menus = this._collectMenus();
+    const saveButton = this.querySelector("#save");
+    if (saveButton) {
+      saveButton.disabled = true;
+      saveButton.textContent = "Speichern …";
+    }
+
+    try {
+      const response = await this._hass.connection.sendMessagePromise({
+        type: "telegram_menu/save_config",
+        menus,
+      });
+      this._config = {
+        ...this._config,
+        menus: response.menus,
+      };
+      this._error = "";
+      this._saved = true;
+      this._render();
+    } catch (error) {
+      this._saved = false;
+      this._error = error?.message || "Speichern fehlgeschlagen.";
+      this._render();
+    }
+  }
+
+  _collectMenus() {
+    const menus = {};
+    for (const card of this.querySelectorAll(".menu-card")) {
+      const name = card.dataset.name?.trim();
+      if (!name) continue;
+
+      const rows = [];
+      for (const row of card.querySelectorAll(".button-row")) {
+        const rowButtons = [];
+        for (const button of row.querySelectorAll(".button-editor")) {
+          const label = button.querySelector(".label-input")?.value.trim() || "";
+          const command = button.querySelector(".command-input")?.value.trim() || "";
+          if (label || command) {
+            rowButtons.push({ label, command });
+          }
+        }
+        if (rowButtons.length) rows.push(rowButtons);
+      }
+
+      menus[name] = {
+        message: card.querySelector(".message-input")?.value || "",
+        keyboard_type: card.querySelector(".keyboard-type")?.value || "reply",
+        rows,
+      };
+    }
+    return menus;
+  }
+
+  _addMenu() {
+    const name = prompt("Name des neuen Menüs:");
+    if (!name?.trim()) return;
+
+    const menus = this._collectMenus();
+    if (menus[name.trim()]) {
+      alert("Ein Menü mit diesem Namen existiert bereits.");
+      return;
+    }
+
+    menus[name.trim()] = {
+      message: "Bitte auswählen:",
+      keyboard_type: "reply",
+      rows: [],
+    };
+    this._config = { ...this._config, menus };
+    this._saved = false;
+    this._render();
+  }
+
+  _deleteMenu(name) {
+    if (!confirm(`Menü "${name}" wirklich löschen?`)) return;
+
+    const menus = this._collectMenus();
+    delete menus[name];
+    this._config = { ...this._config, menus };
+    this._saved = false;
+    this._render();
+  }
+
+  _renameMenu(oldName) {
+    const newName = prompt("Neuer Menüname:", oldName);
+    if (!newName?.trim() || newName.trim() === oldName) return;
+
+    const menus = this._collectMenus();
+    const name = newName.trim();
+
+    if (menus[name]) {
+      alert("Ein Menü mit diesem Namen existiert bereits.");
+      return;
+    }
+
+    menus[name] = menus[oldName];
+    delete menus[oldName];
+    this._config = { ...this._config, menus };
+    this._saved = false;
+    this._render();
+  }
+
+  _addButton(name) {
+    const menus = this._collectMenus();
+    const menu = menus[name];
+    if (!menu) return;
+
+    if (!menu.rows.length) menu.rows.push([]);
+    menu.rows[menu.rows.length - 1].push({
+      label: "Neuer Button",
+      command: "/neuer_button",
+    });
+
+    this._config = { ...this._config, menus };
+    this._saved = false;
+    this._render();
+  }
+
+  _deleteButton(name, rowIndex, buttonIndex) {
+    const menus = this._collectMenus();
+    const menu = menus[name];
+    if (!menu?.rows[rowIndex]) return;
+
+    menu.rows[rowIndex].splice(buttonIndex, 1);
+    if (!menu.rows[rowIndex].length) menu.rows.splice(rowIndex, 1);
+
+    this._config = { ...this._config, menus };
+    this._saved = false;
     this._render();
   }
 
   _render() {
     if (!this.isConnected) return;
 
-    const menus = this._hass?.connection ? this._getMenus() : {};
+    const menus = this._config?.menus || {};
     const menuEntries = Object.entries(menus);
 
     this.innerHTML = `
@@ -27,8 +189,37 @@ class TelegramMenuPanel extends HTMLElement {
         }
         .container { max-width: 1100px; margin: 0 auto; }
         h1 { margin: 0 0 4px; font-size: 28px; }
-        .subtitle { color: var(--secondary-text-color); margin-bottom: 24px; }
-        .menu {
+        .subtitle { color: var(--secondary-text-color); margin-bottom: 20px; }
+        .toolbar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
+        button {
+          border: 0;
+          border-radius: 8px;
+          padding: 10px 16px;
+          font-size: 14px;
+          cursor: pointer;
+          background: var(--primary-color);
+          color: var(--text-primary-color, white);
+        }
+        button.secondary {
+          background: var(--secondary-background-color);
+          color: var(--primary-text-color);
+          border: 1px solid var(--divider-color);
+        }
+        button.danger {
+          background: var(--error-color);
+          color: white;
+        }
+        button:disabled { opacity: .6; cursor: default; }
+        .status {
+          padding: 10px 14px;
+          border-radius: 8px;
+          background: var(--secondary-background-color);
+          color: var(--secondary-text-color);
+          margin-bottom: 20px;
+        }
+        .error { color: var(--error-color); }
+        .success { color: var(--success-color, var(--primary-color)); }
+        .menu-card {
           background: var(--card-background-color);
           border-radius: 12px;
           padding: 20px;
@@ -38,49 +229,69 @@ class TelegramMenuPanel extends HTMLElement {
         .menu-header {
           display: flex;
           align-items: center;
-          gap: 12px;
-          margin-bottom: 8px;
+          gap: 10px;
+          flex-wrap: wrap;
+          margin-bottom: 16px;
         }
-        .menu-icon {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          width: 40px;
-          height: 40px;
-          border-radius: 10px;
-          background: var(--primary-color);
-          color: var(--text-primary-color, white);
-          font-size: 20px;
-        }
-        .menu-title { font-size: 21px; font-weight: 600; }
-        .message { color: var(--secondary-text-color); margin: 8px 0 18px; }
-        .keyboard { display: flex; flex-direction: column; gap: 8px; }
-        .row { display: flex; flex-wrap: wrap; gap: 8px; }
-        .button {
-          min-width: 160px;
-          flex: 0 1 auto;
+        .menu-title { font-size: 21px; font-weight: 600; flex: 1; }
+        .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+        label { font-size: 13px; color: var(--secondary-text-color); }
+        input, select {
+          box-sizing: border-box;
+          width: 100%;
           border: 1px solid var(--divider-color);
-          border-radius: 10px;
-          padding: 12px 16px;
+          border-radius: 8px;
+          padding: 10px 12px;
+          background: var(--secondary-background-color);
+          color: var(--primary-text-color);
+          font: inherit;
+        }
+        .buttons-title { font-size: 16px; font-weight: 600; margin: 18px 0 10px; }
+        .button-row {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 10px;
+          margin-bottom: 10px;
+          padding: 10px;
+          border: 1px dashed var(--divider-color);
+          border-radius: 8px;
+        }
+        .button-editor {
+          flex: 1 1 280px;
+          min-width: 240px;
+          padding: 12px;
+          border: 1px solid var(--divider-color);
+          border-radius: 8px;
           background: var(--secondary-background-color);
         }
-        .label { font-weight: 600; }
-        .command {
-          display: block;
-          margin-top: 4px;
-          color: var(--secondary-text-color);
-          font-size: 13px;
-        }
+        .button-editor .field { margin-bottom: 8px; }
+        .button-actions { display: flex; justify-content: flex-end; }
         .empty {
           background: var(--card-background-color);
           border-radius: 12px;
           padding: 24px;
           color: var(--secondary-text-color);
         }
+        @media (max-width: 600px) {
+          :host { padding: 12px; }
+          .menu-card { padding: 14px; }
+          .button-editor { min-width: 100%; }
+        }
       </style>
+
       <div class="container">
         <h1>Telegram Menu</h1>
-        <div class="subtitle">Menüs und Buttons</div>
+        <div class="subtitle">Menüs und Buttons grafisch bearbeiten</div>
+
+        <div class="toolbar">
+          <button id="add-menu">+ Menü hinzufügen</button>
+          <button id="save">Speichern</button>
+        </div>
+
+        ${this._loading ? '<div class="status">Konfiguration wird geladen …</div>' : ""}
+        ${this._error ? `<div class="status error">${this._escape(this._error)}</div>` : ""}
+        ${this._saved ? '<div class="status success">Änderungen gespeichert.</div>' : ""}
+
         <div id="content"></div>
       </div>
     `;
@@ -90,72 +301,124 @@ class TelegramMenuPanel extends HTMLElement {
     if (!menuEntries.length) {
       content.innerHTML = `
         <div class="empty">
-          Noch keine Menüs konfiguriert.
+          Noch keine Menüs konfiguriert. Über „+ Menü hinzufügen“ kannst du das erste Menü anlegen.
         </div>
       `;
-      return;
-    }
+    } else {
+      for (const [name, menu] of menuEntries) {
+        const card = document.createElement("section");
+        card.className = "menu-card";
+        card.dataset.name = name;
 
-    for (const [name, menu] of menuEntries) {
-      const section = document.createElement("section");
-      section.className = "menu";
+        const header = document.createElement("div");
+        header.className = "menu-header";
 
-      const header = document.createElement("div");
-      header.className = "menu-header";
-      header.innerHTML = '<div class="menu-icon">☰</div><div class="menu-title"></div>';
-      header.querySelector(".menu-title").textContent = name;
-      section.appendChild(header);
+        const title = document.createElement("div");
+        title.className = "menu-title";
+        title.textContent = name;
 
-      if (menu?.message) {
-        const message = document.createElement("div");
-        message.className = "message";
-        message.textContent = menu.message;
-        section.appendChild(message);
-      }
+        const rename = document.createElement("button");
+        rename.className = "secondary";
+        rename.textContent = "Umbenennen";
+        rename.addEventListener("click", () => this._renameMenu(name));
 
-      const keyboard = document.createElement("div");
-      keyboard.className = "keyboard";
+        const remove = document.createElement("button");
+        remove.className = "danger";
+        remove.textContent = "Löschen";
+        remove.addEventListener("click", () => this._deleteMenu(name));
 
-      for (const row of menu?.rows || []) {
-        const rowElement = document.createElement("div");
-        rowElement.className = "row";
+        header.append(title, rename, remove);
+        card.appendChild(header);
 
-        for (const button of row || []) {
-          const buttonElement = document.createElement("div");
-          buttonElement.className = "button";
+        const messageField = document.createElement("div");
+        messageField.className = "field";
+        messageField.innerHTML = '<label>Nachricht über der Tastatur</label>';
+        const messageInput = document.createElement("input");
+        messageInput.className = "message-input";
+        messageInput.value = menu?.message || "";
+        messageField.appendChild(messageInput);
+        card.appendChild(messageField);
 
-          const label = typeof button === "object"
-            ? button.label || button.command
-            : button;
-          const command = typeof button === "object"
-            ? button.command
-            : button;
+        const typeField = document.createElement("div");
+        typeField.className = "field";
+        typeField.innerHTML = '<label>Tastaturtyp</label>';
+        const typeSelect = document.createElement("select");
+        typeSelect.className = "keyboard-type";
+        typeSelect.innerHTML = `
+          <option value="reply">Normale Telegram-Tastatur</option>
+          <option value="inline">Inline-Tastatur</option>
+        `;
+        typeSelect.value = menu?.keyboard_type || "reply";
+        typeField.appendChild(typeSelect);
+        card.appendChild(typeField);
 
-          const labelElement = document.createElement("span");
-          labelElement.className = "label";
-          labelElement.textContent = label || "Button";
+        const buttonsTitle = document.createElement("div");
+        buttonsTitle.className = "buttons-title";
+        buttonsTitle.textContent = "Buttons";
+        card.appendChild(buttonsTitle);
 
-          const commandElement = document.createElement("span");
-          commandElement.className = "command";
-          commandElement.textContent = command || "";
+        for (let rowIndex = 0; rowIndex < (menu?.rows || []).length; rowIndex++) {
+          const row = menu.rows[rowIndex];
+          const rowElement = document.createElement("div");
+          rowElement.className = "button-row";
 
-          buttonElement.append(labelElement, commandElement);
-          rowElement.appendChild(buttonElement);
+          for (let buttonIndex = 0; buttonIndex < row.length; buttonIndex++) {
+            const button = row[buttonIndex];
+            const editor = document.createElement("div");
+            editor.className = "button-editor";
+
+            const labelField = document.createElement("div");
+            labelField.className = "field";
+            labelField.innerHTML = '<label>Anzeigename</label>';
+            const labelInput = document.createElement("input");
+            labelInput.className = "label-input";
+            labelInput.value = button?.label || button?.command || "";
+            labelField.appendChild(labelInput);
+
+            const commandField = document.createElement("div");
+            commandField.className = "field";
+            commandField.innerHTML = '<label>Telegram-Befehl</label>';
+            const commandInput = document.createElement("input");
+            commandInput.className = "command-input";
+            commandInput.value = button?.command || "";
+            commandField.appendChild(commandInput);
+
+            const actions = document.createElement("div");
+            actions.className = "button-actions";
+            const removeButton = document.createElement("button");
+            removeButton.className = "danger";
+            removeButton.textContent = "Button löschen";
+            removeButton.addEventListener(
+              "click",
+              () => this._deleteButton(name, rowIndex, buttonIndex),
+            );
+            actions.appendChild(removeButton);
+
+            editor.append(labelField, commandField, actions);
+            rowElement.appendChild(editor);
+          }
+
+          card.appendChild(rowElement);
         }
 
-        if (rowElement.childElementCount) keyboard.appendChild(rowElement);
-      }
+        const addButton = document.createElement("button");
+        addButton.className = "secondary";
+        addButton.textContent = "+ Button hinzufügen";
+        addButton.addEventListener("click", () => this._addButton(name));
+        card.appendChild(addButton);
 
-      section.appendChild(keyboard);
-      content.appendChild(section);
+        content.appendChild(card);
+      }
     }
+
+    this.querySelector("#add-menu")?.addEventListener("click", () => this._addMenu());
+    this.querySelector("#save")?.addEventListener("click", () => this._saveConfig());
   }
 
-  _getMenus() {
-    // The first panel step receives the existing configuration through
-    // Home Assistant panel configuration. This fallback keeps the panel
-    // functional while the backend API is introduced in the next step.
-    return this._panelConfig?.menus || {};
+  _escape(value) {
+    const div = document.createElement("div");
+    div.textContent = value;
+    return div.innerHTML;
   }
 }
 
