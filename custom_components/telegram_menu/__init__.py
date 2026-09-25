@@ -3,8 +3,9 @@ from __future__ import annotations
 
 from typing import Any
 
+from homeassistant.components import websocket_api
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant, ServiceCall
+from homeassistant.core import HomeAssistant, ServiceCall, callback
 from homeassistant.helpers import config_validation as cv
 import voluptuous as vol
 
@@ -13,6 +14,9 @@ from .menu import MenuManager
 from .panel import async_register_panel, async_unregister_panel
 
 PLATFORMS: list[str] = []
+
+WS_GET_CONFIG = f"{DOMAIN}/get_config"
+WS_SAVE_CONFIG = f"{DOMAIN}/save_config"
 
 
 async def async_setup(hass: HomeAssistant, config: dict[str, Any]) -> bool:
@@ -60,7 +64,81 @@ async def async_setup(hass: HomeAssistant, config: dict[str, Any]) -> bool:
             }
         ),
     )
+
+    websocket_api.async_register_command(hass, ws_get_config)
+    websocket_api.async_register_command(hass, ws_save_config)
     return True
+
+
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): WS_GET_CONFIG,
+    }
+)
+@callback
+def ws_get_config(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+) -> None:
+    """Return the current Telegram Menu configuration."""
+    if not connection.user.is_admin:
+        connection.send_error(msg["id"], "unauthorized", "Admin access required")
+        return
+
+    try:
+        manager = _get_manager(hass, None)
+    except ValueError as err:
+        connection.send_error(msg["id"], "not_configured", str(err))
+        return
+
+    connection.send_result(
+        msg["id"],
+        {
+            "notify_entity": manager.notify_entity,
+            "chat_id": manager.default_chat_id,
+            "menus": manager.menus,
+        },
+    )
+
+
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): WS_SAVE_CONFIG,
+        vol.Required("menus"): dict,
+    }
+)
+@callback
+def ws_save_config(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+) -> None:
+    """Save menus from the graphical editor."""
+    if not connection.user.is_admin:
+        connection.send_error(msg["id"], "unauthorized", "Admin access required")
+        return
+
+    try:
+        manager = _get_manager(hass, None)
+    except ValueError as err:
+        connection.send_error(msg["id"], "not_configured", str(err))
+        return
+
+    menus = msg["menus"]
+    if not isinstance(menus, dict):
+        connection.send_error(msg["id"], "invalid_config", "Menus must be an object")
+        return
+
+    entry = manager.entry
+    hass.config_entries.async_update_entry(
+        entry,
+        data={
+            **entry.data,
+            CONF_MENUS: menus,
+        },
+    )
+    connection.send_result(msg["id"], {"menus": menus})
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
