@@ -7,7 +7,7 @@
 - Geplanter Zielname: `telegram-menu-via-keyboard`
 - Integration Domain: `telegram_menu`
 - Anzeigename: **Telegram Menu via Keyboard**
-- Aktuelle Version: 0.0.10
+- Aktuelle Version: 0.0.11
 - Home Assistant Mindestversion laut `hacs.json`: **2026.1.0**
 - Abhängigkeiten: `telegram_bot`, `websocket_api`, `http`, `frontend`
 - Integrationstyp: `service`
@@ -157,6 +157,6 @@ Die Integrationsversion wird bei jedem veröffentlichten Entwicklungsstand erhö
 
 **Letzte Aktualisierung:** 2026-09-25
 
-**Release:** v0.0.10
+**Release:** v0.0.11
 
-**Aktueller Fokus:** Neues Panel nach Switch-Manager-Prinzip testen; danach Button-Aktionen integrieren.
+**Aktueller Fokus:** Button-Editor optisch verbessern; danach Button-Aktionen integrieren.
