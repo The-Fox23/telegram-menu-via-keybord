@@ -8,7 +8,7 @@ from homeassistant.core import HomeAssistant
 
 from .const import DOMAIN
 
-PANEL_URL = f"/api/{DOMAIN}/panel.js?v=0.5.1"
+PANEL_URL = f"/api/{DOMAIN}/panel.js?v=0.0.8"
 PANEL_FRONTEND_URL_PATH = "telegram_menu"
 PANEL_NAME = "telegram-menu-panel"
 PANEL_ICON = "mdi:keyboard"
