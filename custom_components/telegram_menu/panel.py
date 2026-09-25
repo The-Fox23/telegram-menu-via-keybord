@@ -6,6 +6,7 @@ from homeassistant.components.http import StaticPathConfig
 from homeassistant.core import HomeAssistant
 
 from .const import DOMAIN
+from .version import VERSION
 
 PANEL_URL = f"/api/{DOMAIN}/panel.js"
 PANEL_FRONTEND_URL_PATH = "telegram_menu"
@@ -32,10 +33,10 @@ async def async_register_panel(hass: HomeAssistant, menus: dict) -> None:
         config={
             "_panel_custom": {
                 "name": PANEL_NAME,
-                "module_url": PANEL_URL,
+                "module_url": f"{PANEL_URL}?{VERSION}",
                 "embed_iframe": True,
             },
-            "version": "0.0.10",
+            "version": VERSION,
             "menus": menus,
         },
     )
