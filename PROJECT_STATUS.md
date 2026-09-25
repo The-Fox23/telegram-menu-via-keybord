@@ -49,6 +49,11 @@ Die bestehende Integration kann:
 - mehrere Buttons in Reihen konfigurieren
 - Button-Labels und Telegram-Commands speichern
 - bestehende Telegram-Command-Automationen weiterhin unterstützen
+- **neu: bestehende Menüs und Buttons über das Home-Assistant-Sidebar-Panel grafisch bearbeiten**
+- **neu: Menüs hinzufügen, umbenennen und löschen**
+- **neu: Buttons hinzufügen, bearbeiten und löschen**
+- **neu: Menü-Nachricht und Tastaturtyp grafisch ändern**
+- **neu: Änderungen über die Home-Assistant-WebSocket-API in der Config Entry speichern**
 
 ### Services
 #### `telegram_menu.show`
@@ -82,15 +87,15 @@ Aktuell maximal 30 Buttons über den Config Flow.
 
 ## 6. Wichtige technische Dateien
 Unter `custom_components/telegram_menu/`:
-- `__init__.py`: Setup, Services, Config Entry, Migration auf Version 3, MenuManager; registriert jetzt auch das neue Sidebar-Panel
+- `__init__.py`: Setup, Services, Config Entry, Migration auf Version 3, MenuManager und WebSocket-API für den grafischen Editor
 - `config_flow.py`: klassischer Einrichtungs-/Menü-/Button-Flow
 - `menu.py`: Menüverwaltung und Telegram-Tastaturdarstellung
 - `const.py`: Integrationskonstanten
 - `services.yaml`: Dokumentation der Services
 - `strings.json`: Config-Flow-Texte
 - `translations/de.json`: deutsche Übersetzungen
-- `panel.py`: Registrierung des neuen Home-Assistant-Sidebar-Panels
-- `panel.js`: erste grafische Panel-Oberfläche
+- `panel.py`: Registrierung des Home-Assistant-Sidebar-Panels
+- `panel.js`: grafischer Menü- und Button-Editor
 
 Der bestehende Config Flow wird **zunächst nicht entfernt**. Er bleibt parallel zum neuen grafischen Editor bestehen, bis dieser stabil funktioniert.
 
@@ -118,10 +123,11 @@ Ziel:
 - eigenes **Telegram Menu** Panel in der Home-Assistant-Seitenleiste
 - vorhandene Menüs anzeigen
 - vorhandene Buttons anzeigen
+- Menüs und Buttons grafisch bearbeiten
 
-**Aktueller Stand:** Das Panel-Grundgerüst wurde in Version **0.5.0** angelegt und über `__init__.py` registriert. Die erste Oberfläche zeigt zunächst einen Status-/Platzhalterbereich. Die Anzeige der vorhandenen Menüs und Buttons folgt als nächster Teil dieses Schrittes.
+**Aktueller Stand:** Das Panel zeigt die bestehende Config Entry über eine eigene WebSocket-Schnittstelle an und bietet einen ersten grafischen Editor.
 
-**Status: IN ARBEIT – BITTE TESTEN**
+**Status: ABGESCHLOSSEN / TESTEN**
 
 ### Schritt 2 – Menü-Editor
 - Menü erstellen
@@ -130,7 +136,7 @@ Ziel:
 - Menü-Nachricht bearbeiten
 - Tastaturtyp auswählen
 
-**Status: GEPLANT**
+**Status: IMPLEMENTIERT – TESTEN**
 
 ### Schritt 3 – Button-Editor
 - Anzeigename
@@ -141,7 +147,7 @@ Ziel:
 - löschen
 - neuen Button hinzufügen
 
-**Status: GEPLANT**
+**Status: TEILWEISE IMPLEMENTIERT – TESTEN**
 
 ### Schritt 4 – Aktionen direkt am Button
 Jeder Button erhält einen Action-Bereich. Möglichst soll der native Home-Assistant-Action-Editor verwendet werden.
@@ -149,7 +155,7 @@ Jeder Button erhält einen Action-Bereich. Möglichst soll der native Home-Assis
 **Status: GEPLANT**
 
 ### Schritt 5 – Aktionen ohne zusätzliche Automation
-Bei z. B. `/Haustuer` soll die Integration den Button finden, dessen gespeicherte Aktionen laden und diese in Home Assistant ausführen.
+Bei z. B. `/Haustuer` soll die Integration den Button finden, dessen gespeicherte Aktionen laden und diese in Home Assistant ausführen lassen.
 
 **Status: GEPLANT**
 
@@ -206,15 +212,17 @@ Besonders relevant sind Rückmeldungen zu:
 - Vor größeren Änderungen zuerst den aktuellen Repository-Stand prüfen.
 
 ## 12. Aktueller nächster Schritt
-**Schritt 1 – grafisches Home-Assistant-Panel testen und anschließend die vorhandenen Menüs und Buttons aus der Config Entry in der Oberfläche anzeigen.**
+**Schritt 4 – Button-Aktionen direkt im grafischen Editor.**
 
-Noch nicht Teil des ersten Schrittes:
-- Button-Aktionen
-- Action Editor
-- automatische Aktionsausführung
-- Bedingungen
-- komplexe Untermenüs
-- Entfernung des bisherigen Config Flows
+Vorher muss der Benutzer den neuen Menü-/Button-Editor testen und insbesondere prüfen:
+- Werden die vorhandenen Menüs angezeigt?
+- Lassen sich Menünamen ändern?
+- Lassen sich Nachricht und Tastaturtyp ändern?
+- Lassen sich Buttons bearbeiten/löschen/neu anlegen?
+- Funktioniert Speichern?
+- Bleibt das bestehende Telegram-Menü nach einem Neustart erhalten?
+
+Das Sidebar-Icon `mdi:keyboard` ist weiterhin ein offener Punkt und wird separat untersucht, damit es die Editor-Entwicklung nicht blockiert.
 
 ## 13. Projektstatus
 | Bereich | Status |
@@ -227,9 +235,11 @@ Noch nicht Teil des ersten Schrittes:
 | HACS Metadaten | Angepasst |
 | Integration Icon | Vorhanden |
 | Klassischer Config Flow | Funktioniert |
-| Grafisches Panel – Grundgerüst | **Neu in 0.5.0 – zu testen** |
-| Grafischer Editor | Noch nicht umgesetzt |
-| Eigenes HA Panel | **In Arbeit** |
+| Grafisches Panel | **Implementiert** |
+| Menü-Editor | **Implementiert – zu testen** |
+| Button-Editor | **Implementiert – zu testen** |
+| WebSocket-Speichern | **Implementiert – zu testen** |
+| Sidebar-Icon `mdi:keyboard` | **Offen / noch nicht sichtbar** |
 | Button-Aktionen ohne Automation | Geplant |
 | Native HA Action Editor Integration | Geplant |
 | Mehrere Aktionen | Geplant |
@@ -243,4 +253,4 @@ Danach werden die relevanten Dateien im Repository erneut geprüft, bevor Änder
 
 **Letzte Aktualisierung:** 2026-09-25
 
-**Aktueller Fokus:** Schritt 1 – grafisches Home-Assistant-Panel für Telegram Menu.
+**Aktueller Fokus:** Neuer grafischer Menü-/Button-Editor testen; danach Button-Aktionen integrieren.
