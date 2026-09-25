@@ -7,9 +7,9 @@
 - Geplanter Zielname: `telegram-menu-via-keyboard`
 - Integration Domain: `telegram_menu`
 - Anzeigename: **Telegram Menu via Keyboard**
-- Aktuelle Version: 0.0.9
+- Aktuelle Version: 0.0.10
 - Home Assistant Mindestversion laut `hacs.json`: **2026.1.0**
-- Abhängigkeiten: `telegram_bot`, `panel_custom`
+- Abhängigkeiten: `telegram_bot`, `websocket_api`, `http`, `frontend`
 - Integrationstyp: `service`
 - IoT-Klasse: `local_push`
 - `single_config_entry: true`
@@ -76,6 +76,8 @@ Der klassische Config Flow bleibt zunächst erhalten.
 ### Schritt 1 – Grafisches Home-Assistant-Panel
 **Status: IMPLEMENTIERT / TESTEN**
 
+Das Panel wird jetzt nach dem bewährten Switch-Manager-Prinzip als eingebautes Custom-Panel registriert. Die Panel-JavaScript-Datei wird statisch ausgeliefert und mit der Integrationsversion über die Panel-Konfiguration versioniert, damit Browser- und Frontend-Caches bei neuen Releases nicht dauerhaft die alte Oberfläche verwenden.
+
 ### Schritt 2 – Menü-Editor
 - Menü erstellen
 - Menü umbenennen
@@ -141,7 +143,11 @@ Wenn das funktioniert, beginnt Schritt 4 mit den Button-Aktionen.
 - Untermenüs fehlen noch.
 - Bedingungen fehlen noch.
 
-## 10. Entwicklungsprinzipien
+## 10. Release-Prinzip
+
+Die Integrationsversion wird bei jedem veröffentlichten Entwicklungsstand erhöht. Für HACS ist die GitHub-Release/Tag-Version maßgeblich. Wenn das automatische Anlegen bzw. Verschieben von Releases über die verfügbaren GitHub-Schnittstellen nicht möglich ist, wird der Release-Tag manuell auf den aktuellen `main`-Stand angelegt. Das ist der bevorzugte Fallback und verhindert, dass die Entwicklung am Release-Management hängen bleibt.
+
+## 11. Entwicklungsprinzipien
 - Funktionierende Telegram-Anbindung nicht unnötig verändern.
 - Kleine, testbare Schritte.
 - Nach größeren Änderungen `PROJECT_STATUS.md` aktualisieren.
@@ -151,6 +157,6 @@ Wenn das funktioniert, beginnt Schritt 4 mit den Button-Aktionen.
 
 **Letzte Aktualisierung:** 2026-09-25
 
-**Release:** v0.0.9
+**Release:** v0.0.10
 
-**Aktueller Fokus:** Menü-/Button-Erstellung testen; danach Button-Aktionen integrieren.
+**Aktueller Fokus:** Neues Panel nach Switch-Manager-Prinzip testen; danach Button-Aktionen integrieren.
