@@ -1,6 +1,6 @@
 # Telegram Menu via Keyboard – Projektstatus
 
-> Zentrale Projektdokumentation für die Weiterentwicklung der Home-Assistant-Integration **Telegram Menu via Keyboard**. Diese Datei wird bei größeren Entwicklungsschritten aktualisiert, damit der Projektstand auch in einer späteren Unterhaltung schnell wiederhergestellt werden kann.
+> Zentrale Projektdokumentation für die Weiterentwicklung der Home-Assistant-Integration **Telegram Menu via Keyboard**. Diese Datei wird bei größeren Entwicklungsschritten aktualisiert.
 
 ## 1. Repository
 - GitHub Repository: `The-Fox23/telegram-menu-via-keybord`
@@ -9,7 +9,7 @@
 - Anzeigename: **Telegram Menu via Keyboard**
 - Aktuelle Version: **0.5.0**
 - Home Assistant Mindestversion laut `hacs.json`: **2026.1.0**
-- Abhängigkeit: `telegram_bot`
+- Abhängigkeiten: `telegram_bot`, `panel_custom`
 - Integrationstyp: `service`
 - IoT-Klasse: `local_push`
 - `single_config_entry: true`
@@ -17,16 +17,7 @@
 ## 2. Projektziel
 Die Integration soll Telegram in Home Assistant um eine komfortable grafische Menü- und Steuerungsoberfläche erweitern.
 
-Langfristig soll **für jeden Telegram-Button keine separate Home-Assistant-Automation mehr nötig sein**. Stattdessen sollen Benutzer in einem grafischen Editor:
-1. Menüs anlegen und bearbeiten.
-2. Telegram-Buttons anlegen und bearbeiten.
-3. Buttons anordnen.
-4. Jedem Button direkt Home-Assistant-Aktionen zuweisen.
-5. Mehrere Aktionen pro Button definieren können.
-6. Diese Aktionen beim Empfang des Telegram-Befehls ausführen lassen.
-7. Später optional Untermenüs und Bedingungen konfigurieren.
-
-Das Bedienkonzept orientiert sich grundsätzlich an der Idee von **Switch Manager**: grafische Konfiguration direkt in Home Assistant und möglichst Nutzung des vorhandenen Home-Assistant-Action-Editors.
+Langfristig soll für normale Telegram-Buttons **keine separate Home-Assistant-Automation** mehr nötig sein. Stattdessen sollen Menüs, Buttons und deren Aktionen direkt in der Integration konfiguriert werden.
 
 ## 3. Architektur
 ### Aktuell
@@ -35,127 +26,82 @@ Telegram → Button/Command → Telegram Event → eigene Automation → Aktion
 ### Ziel
 Telegram → Button/Command → Telegram Menu Integration → gespeicherte Button-Aktionen → Home Assistant
 
-Damit soll für normale Button-Aktionen keine separate Automation mehr erforderlich sein.
-
 ## 4. Aktueller Funktionsstand
 Die bestehende Integration kann:
-- vorhandene Telegram-Notify-Entity verwenden
+- Telegram Notify Entity verwenden
 - Standard-Chat-ID speichern
-- Menüs konfigurieren
-- Telegram Reply Keyboards anzeigen
-- Telegram Inline Keyboards anzeigen
+- Reply Keyboards anzeigen
+- Inline Keyboards anzeigen
 - `telegram_menu.show` verwenden
 - `telegram_menu.hide` verwenden
-- mehrere Buttons in Reihen konfigurieren
+- Buttons in Reihen konfigurieren
 - Button-Labels und Telegram-Commands speichern
-- bestehende Telegram-Command-Automationen weiterhin unterstützen
-- **neu: bestehende Menüs und Buttons über das Home-Assistant-Sidebar-Panel grafisch bearbeiten**
-- **neu: Menüs hinzufügen, umbenennen und löschen**
-- **neu: Buttons hinzufügen, bearbeiten und löschen**
-- **neu: Menü-Nachricht und Tastaturtyp grafisch ändern**
-- **neu: Änderungen über die Home-Assistant-WebSocket-API in der Config Entry speichern**
+- bestehende Telegram-Command-Automationen unterstützen
+- ein eigenes Home-Assistant-Sidebar-Panel bereitstellen
+- das Sidebar-Icon **`mdi:keyboard`** anzeigen
+- bestehende Menüs und Buttons grafisch laden
+- Menüs grafisch erstellen, umbenennen und löschen
+- Menü-Nachricht und Tastaturtyp grafisch ändern
+- Buttons grafisch erstellen, bearbeiten und löschen
+- Änderungen über die Home-Assistant-WebSocket-API speichern
 
-### Services
-#### `telegram_menu.show`
-Parameter:
-- `entry_id`
-- `menu`
-- `chat_id`
-
-#### `telegram_menu.hide`
-Parameter:
-- `entry_id`
-- `chat_id`
-
-## 5. Aktuelle Konfiguration
-### Schritt 1 – Telegram-Verbindung
-- Telegram Notify Entity
-- Standard Chat ID
-
-### Schritt 2 – Menü
-- Menüname
-- Nachricht über der Tastatur
-- Tastaturtyp: Reply Keyboard oder Inline Keyboard
-
-### Schritt 3 – Buttons
-- Anzeigename
+## 5. Grafischer Editor
+Das Panel bietet jetzt ausdrücklich:
+- **+ Menü erstellen**
+- **+ Erstes Menü erstellen**, wenn noch kein Menü vorhanden ist
+- **+ Button erstellen** innerhalb eines Menüs
+- Anzeigename des Buttons
 - Telegram-Befehl
-- Reihe
-- weiteren Button hinzufügen
+- Button löschen
+- Menü-Nachricht
+- Tastaturtyp
+- Menü umbenennen/löschen
+- **Speichern**
 
-Aktuell maximal 30 Buttons über den Config Flow.
+Home Assistant Custom Panels erhalten ihre Konfiguration über die `panel`-Property und `panel.config`; das Panel nutzt zusätzlich eine WebSocket-Verbindung, um die aktuelle Config Entry zu laden und zu speichern. citeturn0search0
 
 ## 6. Wichtige technische Dateien
 Unter `custom_components/telegram_menu/`:
-- `__init__.py`: Setup, Services, Config Entry, Migration auf Version 3, MenuManager und WebSocket-API für den grafischen Editor
-- `config_flow.py`: klassischer Einrichtungs-/Menü-/Button-Flow
-- `menu.py`: Menüverwaltung und Telegram-Tastaturdarstellung
-- `const.py`: Integrationskonstanten
-- `services.yaml`: Dokumentation der Services
-- `strings.json`: Config-Flow-Texte
-- `translations/de.json`: deutsche Übersetzungen
-- `panel.py`: Registrierung des Home-Assistant-Sidebar-Panels
-- `panel.js`: grafischer Menü- und Button-Editor
+- `__init__.py`: Setup, Services, WebSocket-API und Config Entry
+- `config_flow.py`: bisheriger klassischer Config Flow
+- `menu.py`: Telegram-Menüausgabe
+- `const.py`: Konstanten
+- `panel.py`: Sidebar-Panel
+- `panel.js`: grafischer Menü-/Button-Editor
+- `PROJECT_STATUS.md`: Projektstatus
 
-Der bestehende Config Flow wird **zunächst nicht entfernt**. Er bleibt parallel zum neuen grafischen Editor bestehen, bis dieser stabil funktioniert.
+Der klassische Config Flow bleibt zunächst erhalten.
 
-## 7. HACS / Repository
-- `manifest.json` verwendet den Namen **Telegram Menu via Keyboard**
-- `hacs.json` wurde ebenfalls auf **Telegram Menu via Keyboard** angepasst
-- Integrations-Icon vorhanden unter `custom_components/telegram_menu/brand/icon.png`
-- Ein zusätzliches `logo.png` ist aktuell nicht erforderlich.
-- README wurde auf das Projekt angepasst.
-- README-Beispiele verwenden absichtlich Platzhalter wie `xxxxxxxx` für persönliche Telegram IDs/Entities. Diese Platzhalter sollen beibehalten werden.
-
-## 8. Wichtige Entwicklungsentscheidung
-Die aktuelle Telegram-Anbindung funktioniert. Deshalb wird der neue grafische Editor **schrittweise parallel zur bestehenden Funktionalität** entwickelt.
-
-Zunächst werden nicht unnötig entfernt:
-- bestehender Config Flow
-- bestehende Services
-- bestehende Menülogik
-
-Erst wenn der neue Editor stabil funktioniert, wird entschieden, welche alten Funktionen noch benötigt werden.
-
-## 9. Entwicklungsplan
+## 7. Entwicklungsplan
 ### Schritt 1 – Grafisches Home-Assistant-Panel
-Ziel:
-- eigenes **Telegram Menu** Panel in der Home-Assistant-Seitenleiste
-- vorhandene Menüs anzeigen
-- vorhandene Buttons anzeigen
-- Menüs und Buttons grafisch bearbeiten
-
-**Aktueller Stand:** Das Panel zeigt die bestehende Config Entry über eine eigene WebSocket-Schnittstelle an und bietet einen ersten grafischen Editor.
-
-**Status: ABGESCHLOSSEN / TESTEN**
+**Status: IMPLEMENTIERT / TESTEN**
 
 ### Schritt 2 – Menü-Editor
 - Menü erstellen
 - Menü umbenennen
 - Menü löschen
-- Menü-Nachricht bearbeiten
+- Nachricht bearbeiten
 - Tastaturtyp auswählen
 
-**Status: IMPLEMENTIERT – TESTEN**
+**Status: IMPLEMENTIERT / TESTEN**
 
 ### Schritt 3 – Button-Editor
+- Button erstellen
 - Anzeigename
 - Telegram Command
 - Position/Reihe
-- optional Icon
 - bearbeiten
 - löschen
-- neuen Button hinzufügen
 
-**Status: TEILWEISE IMPLEMENTIERT – TESTEN**
+**Status: IMPLEMENTIERT / TESTEN**
 
 ### Schritt 4 – Aktionen direkt am Button
-Jeder Button erhält einen Action-Bereich. Möglichst soll der native Home-Assistant-Action-Editor verwendet werden.
+Jeder Button soll einen eigenen Action-Bereich erhalten. Möglichst soll der native Home-Assistant-Action-Editor verwendet werden.
 
-**Status: GEPLANT**
+**Status: ALS NÄCHSTES**
 
 ### Schritt 5 – Aktionen ohne zusätzliche Automation
-Bei z. B. `/Haustuer` soll die Integration den Button finden, dessen gespeicherte Aktionen laden und diese in Home Assistant ausführen lassen.
+Telegram-Befehl → Button suchen → gespeicherte Aktionen ausführen.
 
 **Status: GEPLANT**
 
@@ -169,88 +115,40 @@ Beispiel:
 **Status: GEPLANT**
 
 ### Schritt 7 – Untermenüs
-Beispiel:
-- Hauptmenü → Garage → Garage groß / Garage klein / Zurück
-
 **Status: GEPLANT**
 
 ### Schritt 8 – Bedingungen
-Optional später:
-- Wenn Alarmanlage deaktiviert → Haustür öffnen
-- Sonst → Telegram-Nachricht
-
 **Status: SPÄTER / OPTIONAL**
 
-## 10. Teststrategie
-Die Entwicklung erfolgt gemeinsam mit dem Benutzer.
+## 8. Aktueller Test
+Der Benutzer hat bestätigt, dass das **Sidebar-Icon jetzt sichtbar ist**.
 
-Nach jeder größeren Änderung:
-1. Repository aktualisieren.
-2. Home Assistant neu starten bzw. Integration neu laden.
-3. Funktion testen.
-4. Ergebnis zurückmelden.
-5. Fehler oder Verbesserung dokumentieren.
-6. Erst danach nächsten Entwicklungsschritt beginnen.
+Als Nächstes soll geprüft werden:
+1. Wird das Panel korrekt geladen?
+2. Wird ein bestehendes Menü angezeigt?
+3. Gibt es sichtbar die Schaltfläche **+ Menü erstellen**?
+4. Kann ein Menü angelegt werden?
+5. Erscheint darin **+ Button erstellen**?
+6. Kann ein Button gespeichert werden?
+7. Bleibt die Konfiguration nach Neustart erhalten?
 
-Besonders relevant sind Rückmeldungen zu:
-- Funktion
-- Fehlern/Logmeldungen
-- Desktop-Darstellung
-- Smartphone-Darstellung
-- Bedienbarkeit
-- gewünschten Änderungen
+Wenn das funktioniert, beginnt Schritt 4 mit den Button-Aktionen.
 
-## 11. Entwicklungsprinzipien
-- Kleine Änderungen statt großer Komplettumbauten.
-- Funktionierende Bestandteile möglichst erhalten.
-- Nach jedem größeren Schritt testen.
-- Keine unnötigen YAML-Automationen für Button-Aktionen.
-- Bedienung möglichst nativ und Home-Assistant-typisch gestalten.
-- Vorhandene Home-Assistant-UI-Komponenten nach Möglichkeit wiederverwenden.
+## 9. Bekannte offene Punkte
+- Native Home-Assistant-Action-Editor-Integration fehlt noch.
+- Button-Aktionen werden noch nicht ausgeführt.
+- Mehrere Aktionen pro Button fehlen noch.
+- Untermenüs fehlen noch.
+- Bedingungen fehlen noch.
+
+## 10. Entwicklungsprinzipien
+- Funktionierende Telegram-Anbindung nicht unnötig verändern.
+- Kleine, testbare Schritte.
+- Nach größeren Änderungen `PROJECT_STATUS.md` aktualisieren.
 - Keine persönlichen Telegram IDs, Tokens oder Zugangsdaten ins Repository.
-- README und PROJECT_STATUS.md bei wichtigen Änderungen aktuell halten.
-- Vor größeren Änderungen zuerst den aktuellen Repository-Stand prüfen.
-
-## 12. Aktueller nächster Schritt
-**Schritt 4 – Button-Aktionen direkt im grafischen Editor.**
-
-Vorher muss der Benutzer den neuen Menü-/Button-Editor testen und insbesondere prüfen:
-- Werden die vorhandenen Menüs angezeigt?
-- Lassen sich Menünamen ändern?
-- Lassen sich Nachricht und Tastaturtyp ändern?
-- Lassen sich Buttons bearbeiten/löschen/neu anlegen?
-- Funktioniert Speichern?
-- Bleibt das bestehende Telegram-Menü nach einem Neustart erhalten?
-
-Das Sidebar-Icon `mdi:keyboard` ist weiterhin ein offener Punkt und wird separat untersucht, damit es die Editor-Entwicklung nicht blockiert.
-
-## 13. Projektstatus
-| Bereich | Status |
-|---|---|
-| Telegram Bot Anbindung | Funktioniert |
-| Reply Keyboard | Funktioniert |
-| Inline Keyboard | Funktioniert |
-| `telegram_menu.show` | Funktioniert |
-| `telegram_menu.hide` | Funktioniert |
-| HACS Metadaten | Angepasst |
-| Integration Icon | Vorhanden |
-| Klassischer Config Flow | Funktioniert |
-| Grafisches Panel | **Implementiert** |
-| Menü-Editor | **Implementiert – zu testen** |
-| Button-Editor | **Implementiert – zu testen** |
-| WebSocket-Speichern | **Implementiert – zu testen** |
-| Sidebar-Icon `mdi:keyboard` | **Offen / noch nicht sichtbar** |
-| Button-Aktionen ohne Automation | Geplant |
-| Native HA Action Editor Integration | Geplant |
-| Mehrere Aktionen | Geplant |
-| Untermenüs | Geplant |
-| Bedingungen | Optional / später |
-
-## 14. Arbeitsweise bei zukünftigen Unterhaltungen
-Bei einer späteren Fortsetzung dieses Projekts soll diese Datei zuerst als Projektstatus verwendet werden.
-
-Danach werden die relevanten Dateien im Repository erneut geprüft, bevor Änderungen vorgenommen werden.
+- Bestehenden Config Flow zunächst erhalten.
+- Home-Assistant-native UI nach Möglichkeit verwenden.
 
 **Letzte Aktualisierung:** 2026-09-25
 
-**Aktueller Fokus:** Neuer grafischer Menü-/Button-Editor testen; danach Button-Aktionen integrieren.
+**Aktueller Fokus:** Menü-/Button-Erstellung testen; danach Button-Aktionen integrieren.
