@@ -318,20 +318,22 @@ class TelegramMenuPanel extends HTMLElement {
         .button-row {
           display: flex;
           flex-wrap: wrap;
-          gap: 10px;
-          margin-bottom: 10px;
-          padding: 10px;
-          border: 1px dashed var(--divider-color);
-          border-radius: 8px;
+          gap: 12px;
+          margin-bottom: 12px;
+          padding: 12px;
+          border: 1px solid rgba(128, 128, 128, 0.28);
+          border-radius: 10px;
+          background: rgba(128, 128, 128, 0.07);
         }
 
         .button-editor {
           flex: 1 1 280px;
           min-width: 240px;
-          padding: 12px;
-          border: 1px solid var(--divider-color);
-          border-radius: 8px;
-          background: var(--secondary-background-color);
+          padding: 14px;
+          border: 1px solid rgba(128, 128, 128, 0.38);
+          border-radius: 10px;
+          background: rgba(128, 128, 128, 0.14);
+          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
         }
 
         .button-editor .field {
