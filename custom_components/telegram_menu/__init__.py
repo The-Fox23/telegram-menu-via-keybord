@@ -5,11 +5,12 @@ from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, ServiceCall
-from homeassistant.helpers import config_validation as cv, entity_registry as er
+from homeassistant.helpers import config_validation as cv
 import voluptuous as vol
 
-from .const import CONF_CHAT_ID, CONF_NOTIFY_ENTITY, CONF_MENUS, DOMAIN
+from .const import CONF_CHAT_ID, CONF_MENUS, CONF_NOTIFY_ENTITY, DOMAIN
 from .menu import MenuManager
+from .panel import async_register_panel, async_unregister_panel
 
 PLATFORMS: list[str] = []
 
@@ -17,6 +18,7 @@ PLATFORMS: list[str] = []
 async def async_setup(hass: HomeAssistant, config: dict[str, Any]) -> bool:
     """Set up the Telegram Menu integration."""
     hass.data.setdefault(DOMAIN, {})
+    await async_register_panel(hass)
 
     async def handle_show(call: ServiceCall) -> None:
         """Show a configured Telegram menu."""
@@ -82,6 +84,7 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a Telegram Menu config entry."""
     hass.data[DOMAIN].pop(entry.entry_id, None)
+    async_unregister_panel(hass)
     return True
 
 
