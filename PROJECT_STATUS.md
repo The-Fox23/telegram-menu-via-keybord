@@ -7,7 +7,7 @@
 - Geplanter Zielname: `telegram-menu-via-keyboard`
 - Integration Domain: `telegram_menu`
 - Anzeigename: **Telegram Menu via Keyboard**
-- Aktuelle Version: **0.4.0**
+- Aktuelle Version: **0.5.0**
 - Home Assistant Mindestversion laut `hacs.json`: **2026.1.0**
 - Abhängigkeit: `telegram_bot`
 - Integrationstyp: `service`
@@ -82,13 +82,15 @@ Aktuell maximal 30 Buttons über den Config Flow.
 
 ## 6. Wichtige technische Dateien
 Unter `custom_components/telegram_menu/`:
-- `__init__.py`: Setup, Services, Config Entry, Migration auf Version 3, MenuManager
+- `__init__.py`: Setup, Services, Config Entry, Migration auf Version 3, MenuManager; registriert jetzt auch das neue Sidebar-Panel
 - `config_flow.py`: klassischer Einrichtungs-/Menü-/Button-Flow
 - `menu.py`: Menüverwaltung und Telegram-Tastaturdarstellung
 - `const.py`: Integrationskonstanten
 - `services.yaml`: Dokumentation der Services
 - `strings.json`: Config-Flow-Texte
 - `translations/de.json`: deutsche Übersetzungen
+- `panel.py`: Registrierung des neuen Home-Assistant-Sidebar-Panels
+- `panel.js`: erste grafische Panel-Oberfläche
 
 Der bestehende Config Flow wird **zunächst nicht entfernt**. Er bleibt parallel zum neuen grafischen Editor bestehen, bis dieser stabil funktioniert.
 
@@ -117,9 +119,9 @@ Ziel:
 - vorhandene Menüs anzeigen
 - vorhandene Buttons anzeigen
 
-Noch keine komplexe Aktionsausführung.
+**Aktueller Stand:** Das Panel-Grundgerüst wurde in Version **0.5.0** angelegt und über `__init__.py` registriert. Die erste Oberfläche zeigt zunächst einen Status-/Platzhalterbereich. Die Anzeige der vorhandenen Menüs und Buttons folgt als nächster Teil dieses Schrittes.
 
-**Status: ALS NÄCHSTES**
+**Status: IN ARBEIT – BITTE TESTEN**
 
 ### Schritt 2 – Menü-Editor
 - Menü erstellen
@@ -204,10 +206,7 @@ Besonders relevant sind Rückmeldungen zu:
 - Vor größeren Änderungen zuerst den aktuellen Repository-Stand prüfen.
 
 ## 12. Aktueller nächster Schritt
-**Ausschließlich das grafische Home-Assistant-Panel umsetzen.**
-
-Erstes Ziel:
-> Telegram Menu erscheint als eigenes Panel in Home Assistant und kann die aktuell vorhandenen Menüs und Buttons grafisch anzeigen.
+**Schritt 1 – grafisches Home-Assistant-Panel testen und anschließend die vorhandenen Menüs und Buttons aus der Config Entry in der Oberfläche anzeigen.**
 
 Noch nicht Teil des ersten Schrittes:
 - Button-Aktionen
@@ -228,8 +227,9 @@ Noch nicht Teil des ersten Schrittes:
 | HACS Metadaten | Angepasst |
 | Integration Icon | Vorhanden |
 | Klassischer Config Flow | Funktioniert |
+| Grafisches Panel – Grundgerüst | **Neu in 0.5.0 – zu testen** |
 | Grafischer Editor | Noch nicht umgesetzt |
-| Eigenes HA Panel | Als nächstes |
+| Eigenes HA Panel | **In Arbeit** |
 | Button-Aktionen ohne Automation | Geplant |
 | Native HA Action Editor Integration | Geplant |
 | Mehrere Aktionen | Geplant |
@@ -241,6 +241,6 @@ Bei einer späteren Fortsetzung dieses Projekts soll diese Datei zuerst als Proj
 
 Danach werden die relevanten Dateien im Repository erneut geprüft, bevor Änderungen vorgenommen werden.
 
-**Letzte Aktualisierung:** 2026-09-24
+**Letzte Aktualisierung:** 2026-09-25
 
 **Aktueller Fokus:** Schritt 1 – grafisches Home-Assistant-Panel für Telegram Menu.
