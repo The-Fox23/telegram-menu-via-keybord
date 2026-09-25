@@ -1,8 +1,7 @@
 """Telegram Menu Home Assistant sidebar panel."""
 from __future__ import annotations
 
-from homeassistant.components import panel_custom
-from homeassistant.components.frontend import async_remove_panel
+from homeassistant.components.frontend import async_register_built_in_panel, async_remove_panel
 from homeassistant.components.http import StaticPathConfig
 from homeassistant.core import HomeAssistant
 
@@ -12,6 +11,7 @@ PANEL_URL = f"/api/{DOMAIN}/panel.js"
 PANEL_FRONTEND_URL_PATH = "telegram_menu"
 PANEL_NAME = "telegram-menu-panel"
 PANEL_ICON = "mdi:keyboard"
+PANEL_TITLE = "Telegram Menu"
 
 
 async def async_register_panel(hass: HomeAssistant, menus: dict) -> None:
@@ -22,16 +22,22 @@ async def async_register_panel(hass: HomeAssistant, menus: dict) -> None:
         [StaticPathConfig(PANEL_URL, panel_path, True)]
     )
 
-    await panel_custom.async_register_panel(
-        hass=hass,
-        webcomponent_name=PANEL_NAME,
-        frontend_url_path=PANEL_FRONTEND_URL_PATH,
-        sidebar_title="Telegram Menu",
+    async_register_built_in_panel(
+        hass,
+        component_name="custom",
+        sidebar_title=PANEL_TITLE,
         sidebar_icon=PANEL_ICON,
-        module_url=PANEL_URL,
-        embed_iframe=False,
+        frontend_url_path=PANEL_FRONTEND_URL_PATH,
         require_admin=True,
-        config={"menus": menus},
+        config={
+            "_panel_custom": {
+                "name": PANEL_NAME,
+                "module_url": PANEL_URL,
+                "embed_iframe": True,
+            },
+            "version": "0.0.10",
+            "menus": menus,
+        },
     )
 
 
