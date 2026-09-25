@@ -18,7 +18,6 @@ PLATFORMS: list[str] = []
 async def async_setup(hass: HomeAssistant, config: dict[str, Any]) -> bool:
     """Set up the Telegram Menu integration."""
     hass.data.setdefault(DOMAIN, {})
-    await async_register_panel(hass)
 
     async def handle_show(call: ServiceCall) -> None:
         """Show a configured Telegram menu."""
@@ -68,6 +67,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up a Telegram Menu config entry."""
     manager = MenuManager(hass, entry)
     hass.data[DOMAIN][entry.entry_id] = manager
+    await async_register_panel(hass, manager.menus)
     return True
 
 
