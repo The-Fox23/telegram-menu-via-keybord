@@ -11,7 +11,7 @@ from .const import DOMAIN
 PANEL_URL = f"/api/{DOMAIN}/panel.js"
 PANEL_FRONTEND_URL_PATH = "telegram_menu"
 PANEL_NAME = "telegram-menu-panel"
-PANEL_ICON = "mdi:telegram"
+PANEL_ICON = "mdi:keyboard"
 
 
 async def async_register_panel(hass: HomeAssistant, menus: dict) -> None:
