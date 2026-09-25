@@ -19,6 +19,7 @@ class TelegramMenuPanel extends HTMLElement {
   async _loadConfig() {
     if (this._loading || !this._hass?.connection) return;
     this._loading = true;
+    this._render();
 
     try {
       const response = await this._hass.connection.sendMessagePromise({
@@ -26,6 +27,7 @@ class TelegramMenuPanel extends HTMLElement {
       });
       this._config = response;
       this._loaded = true;
+      this._error = "";
       this._render();
     } catch (error) {
       this._error = error?.message || "Konfiguration konnte nicht geladen werden.";
@@ -50,10 +52,7 @@ class TelegramMenuPanel extends HTMLElement {
         type: "telegram_menu/save_config",
         menus,
       });
-      this._config = {
-        ...this._config,
-        menus: response.menus,
-      };
+      this._config = { ...this._config, menus: response.menus };
       this._error = "";
       this._saved = true;
       this._render();
@@ -66,6 +65,7 @@ class TelegramMenuPanel extends HTMLElement {
 
   _collectMenus() {
     const menus = {};
+
     for (const card of this.querySelectorAll(".menu-card")) {
       const name = card.dataset.name?.trim();
       if (!name) continue;
@@ -73,13 +73,16 @@ class TelegramMenuPanel extends HTMLElement {
       const rows = [];
       for (const row of card.querySelectorAll(".button-row")) {
         const rowButtons = [];
+
         for (const button of row.querySelectorAll(".button-editor")) {
           const label = button.querySelector(".label-input")?.value.trim() || "";
           const command = button.querySelector(".command-input")?.value.trim() || "";
+
           if (label || command) {
             rowButtons.push({ label, command });
           }
         }
+
         if (rowButtons.length) rows.push(rowButtons);
       }
 
@@ -89,24 +92,26 @@ class TelegramMenuPanel extends HTMLElement {
         rows,
       };
     }
+
     return menus;
   }
 
-  _addMenu() {
-    const name = prompt("Name des neuen Menüs:");
-    if (!name?.trim()) return;
-
+  _createMenu() {
     const menus = this._collectMenus();
-    if (menus[name.trim()]) {
-      alert("Ein Menü mit diesem Namen existiert bereits.");
-      return;
+    let number = Object.keys(menus).length + 1;
+    let name = number === 1 ? "main" : `menu_${number}`;
+
+    while (menus[name]) {
+      number += 1;
+      name = `menu_${number}`;
     }
 
-    menus[name.trim()] = {
+    menus[name] = {
       message: "Bitte auswählen:",
       keyboard_type: "reply",
       rows: [],
     };
+
     this._config = { ...this._config, menus };
     this._saved = false;
     this._render();
@@ -117,6 +122,7 @@ class TelegramMenuPanel extends HTMLElement {
 
     const menus = this._collectMenus();
     delete menus[name];
+
     this._config = { ...this._config, menus };
     this._saved = false;
     this._render();
@@ -136,6 +142,7 @@ class TelegramMenuPanel extends HTMLElement {
 
     menus[name] = menus[oldName];
     delete menus[oldName];
+
     this._config = { ...this._config, menus };
     this._saved = false;
     this._render();
@@ -147,6 +154,7 @@ class TelegramMenuPanel extends HTMLElement {
     if (!menu) return;
 
     if (!menu.rows.length) menu.rows.push([]);
+
     menu.rows[menu.rows.length - 1].push({
       label: "Neuer Button",
       command: "/neuer_button",
@@ -163,7 +171,10 @@ class TelegramMenuPanel extends HTMLElement {
     if (!menu?.rows[rowIndex]) return;
 
     menu.rows[rowIndex].splice(buttonIndex, 1);
-    if (!menu.rows[rowIndex].length) menu.rows.splice(rowIndex, 1);
+
+    if (!menu.rows[rowIndex].length) {
+      menu.rows.splice(rowIndex, 1);
+    }
 
     this._config = { ...this._config, menus };
     this._saved = false;
@@ -187,10 +198,29 @@ class TelegramMenuPanel extends HTMLElement {
           min-height: 100vh;
           font-family: var(--paper-font-body1_-_font-family, sans-serif);
         }
-        .container { max-width: 1100px; margin: 0 auto; }
-        h1 { margin: 0 0 4px; font-size: 28px; }
-        .subtitle { color: var(--secondary-text-color); margin-bottom: 20px; }
-        .toolbar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
+
+        .container {
+          max-width: 1100px;
+          margin: 0 auto;
+        }
+
+        h1 {
+          margin: 0 0 4px;
+          font-size: 28px;
+        }
+
+        .subtitle {
+          color: var(--secondary-text-color);
+          margin-bottom: 20px;
+        }
+
+        .toolbar {
+          display: flex;
+          gap: 10px;
+          flex-wrap: wrap;
+          margin-bottom: 20px;
+        }
+
         button {
           border: 0;
           border-radius: 8px;
@@ -200,16 +230,23 @@ class TelegramMenuPanel extends HTMLElement {
           background: var(--primary-color);
           color: var(--text-primary-color, white);
         }
+
         button.secondary {
           background: var(--secondary-background-color);
           color: var(--primary-text-color);
           border: 1px solid var(--divider-color);
         }
+
         button.danger {
           background: var(--error-color);
           color: white;
         }
-        button:disabled { opacity: .6; cursor: default; }
+
+        button:disabled {
+          opacity: .6;
+          cursor: default;
+        }
+
         .status {
           padding: 10px 14px;
           border-radius: 8px;
@@ -217,8 +254,15 @@ class TelegramMenuPanel extends HTMLElement {
           color: var(--secondary-text-color);
           margin-bottom: 20px;
         }
-        .error { color: var(--error-color); }
-        .success { color: var(--success-color, var(--primary-color)); }
+
+        .error {
+          color: var(--error-color);
+        }
+
+        .success {
+          color: var(--success-color, var(--primary-color));
+        }
+
         .menu-card {
           background: var(--card-background-color);
           border-radius: 12px;
@@ -226,6 +270,7 @@ class TelegramMenuPanel extends HTMLElement {
           margin-bottom: 20px;
           box-shadow: var(--ha-box-shadow);
         }
+
         .menu-header {
           display: flex;
           align-items: center;
@@ -233,10 +278,27 @@ class TelegramMenuPanel extends HTMLElement {
           flex-wrap: wrap;
           margin-bottom: 16px;
         }
-        .menu-title { font-size: 21px; font-weight: 600; flex: 1; }
-        .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
-        label { font-size: 13px; color: var(--secondary-text-color); }
-        input, select {
+
+        .menu-title {
+          font-size: 21px;
+          font-weight: 600;
+          flex: 1;
+        }
+
+        .field {
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+          margin-bottom: 14px;
+        }
+
+        label {
+          font-size: 13px;
+          color: var(--secondary-text-color);
+        }
+
+        input,
+        select {
           box-sizing: border-box;
           width: 100%;
           border: 1px solid var(--divider-color);
@@ -246,7 +308,13 @@ class TelegramMenuPanel extends HTMLElement {
           color: var(--primary-text-color);
           font: inherit;
         }
-        .buttons-title { font-size: 16px; font-weight: 600; margin: 18px 0 10px; }
+
+        .buttons-title {
+          font-size: 16px;
+          font-weight: 600;
+          margin: 18px 0 10px;
+        }
+
         .button-row {
           display: flex;
           flex-wrap: wrap;
@@ -256,6 +324,7 @@ class TelegramMenuPanel extends HTMLElement {
           border: 1px dashed var(--divider-color);
           border-radius: 8px;
         }
+
         .button-editor {
           flex: 1 1 280px;
           min-width: 240px;
@@ -264,18 +333,55 @@ class TelegramMenuPanel extends HTMLElement {
           border-radius: 8px;
           background: var(--secondary-background-color);
         }
-        .button-editor .field { margin-bottom: 8px; }
-        .button-actions { display: flex; justify-content: flex-end; }
+
+        .button-editor .field {
+          margin-bottom: 8px;
+        }
+
+        .button-actions {
+          display: flex;
+          justify-content: flex-end;
+        }
+
         .empty {
           background: var(--card-background-color);
           border-radius: 12px;
-          padding: 24px;
-          color: var(--secondary-text-color);
+          padding: 28px;
+          text-align: center;
+          box-shadow: var(--ha-box-shadow);
         }
+
+        .empty-title {
+          font-size: 20px;
+          font-weight: 600;
+          margin-bottom: 8px;
+        }
+
+        .empty-text {
+          color: var(--secondary-text-color);
+          margin-bottom: 18px;
+        }
+
+        .menu-help {
+          padding: 10px 14px;
+          border-radius: 8px;
+          background: var(--secondary-background-color);
+          color: var(--secondary-text-color);
+          margin-bottom: 16px;
+        }
+
         @media (max-width: 600px) {
-          :host { padding: 12px; }
-          .menu-card { padding: 14px; }
-          .button-editor { min-width: 100%; }
+          :host {
+            padding: 12px;
+          }
+
+          .menu-card {
+            padding: 14px;
+          }
+
+          .button-editor {
+            min-width: 100%;
+          }
         }
       </style>
 
@@ -284,7 +390,7 @@ class TelegramMenuPanel extends HTMLElement {
         <div class="subtitle">Menüs und Buttons grafisch bearbeiten</div>
 
         <div class="toolbar">
-          <button id="add-menu">+ Menü hinzufügen</button>
+          <button id="add-menu">+ Menü erstellen</button>
           <button id="save">Speichern</button>
         </div>
 
@@ -298,12 +404,21 @@ class TelegramMenuPanel extends HTMLElement {
 
     const content = this.querySelector("#content");
 
-    if (!menuEntries.length) {
+    if (!menuEntries.length && !this._loading && !this._error) {
       content.innerHTML = `
         <div class="empty">
-          Noch keine Menüs konfiguriert. Über „+ Menü hinzufügen“ kannst du das erste Menü anlegen.
+          <div class="empty-title">Noch kein Telegram-Menü vorhanden</div>
+          <div class="empty-text">
+            Erstelle zuerst ein Menü. Danach kannst du darin beliebig viele Telegram-Buttons anlegen.
+          </div>
+          <button id="create-first-menu">+ Erstes Menü erstellen</button>
         </div>
       `;
+
+      this.querySelector("#create-first-menu")?.addEventListener(
+        "click",
+        () => this._createMenu(),
+      );
     } else {
       for (const [name, menu] of menuEntries) {
         const card = document.createElement("section");
@@ -330,9 +445,15 @@ class TelegramMenuPanel extends HTMLElement {
         header.append(title, rename, remove);
         card.appendChild(header);
 
+        const help = document.createElement("div");
+        help.className = "menu-help";
+        help.textContent = "Hier kannst du die Menü-Nachricht, den Tastaturtyp und die Telegram-Buttons konfigurieren.";
+        card.appendChild(help);
+
         const messageField = document.createElement("div");
         messageField.className = "field";
-        messageField.innerHTML = '<label>Nachricht über der Tastatur</label>';
+        messageField.innerHTML = "<label>Nachricht über der Tastatur</label>";
+
         const messageInput = document.createElement("input");
         messageInput.className = "message-input";
         messageInput.value = menu?.message || "";
@@ -341,7 +462,8 @@ class TelegramMenuPanel extends HTMLElement {
 
         const typeField = document.createElement("div");
         typeField.className = "field";
-        typeField.innerHTML = '<label>Tastaturtyp</label>';
+        typeField.innerHTML = "<label>Tastaturtyp</label>";
+
         const typeSelect = document.createElement("select");
         typeSelect.className = "keyboard-type";
         typeSelect.innerHTML = `
@@ -369,7 +491,8 @@ class TelegramMenuPanel extends HTMLElement {
 
             const labelField = document.createElement("div");
             labelField.className = "field";
-            labelField.innerHTML = '<label>Anzeigename</label>';
+            labelField.innerHTML = "<label>Anzeigename</label>";
+
             const labelInput = document.createElement("input");
             labelInput.className = "label-input";
             labelInput.value = button?.label || button?.command || "";
@@ -377,7 +500,8 @@ class TelegramMenuPanel extends HTMLElement {
 
             const commandField = document.createElement("div");
             commandField.className = "field";
-            commandField.innerHTML = '<label>Telegram-Befehl</label>';
+            commandField.innerHTML = "<label>Telegram-Befehl</label>";
+
             const commandInput = document.createElement("input");
             commandInput.className = "command-input";
             commandInput.value = button?.command || "";
@@ -385,6 +509,7 @@ class TelegramMenuPanel extends HTMLElement {
 
             const actions = document.createElement("div");
             actions.className = "button-actions";
+
             const removeButton = document.createElement("button");
             removeButton.className = "danger";
             removeButton.textContent = "Button löschen";
@@ -392,8 +517,8 @@ class TelegramMenuPanel extends HTMLElement {
               "click",
               () => this._deleteButton(name, rowIndex, buttonIndex),
             );
-            actions.appendChild(removeButton);
 
+            actions.appendChild(removeButton);
             editor.append(labelField, commandField, actions);
             rowElement.appendChild(editor);
           }
@@ -403,7 +528,7 @@ class TelegramMenuPanel extends HTMLElement {
 
         const addButton = document.createElement("button");
         addButton.className = "secondary";
-        addButton.textContent = "+ Button hinzufügen";
+        addButton.textContent = "+ Button erstellen";
         addButton.addEventListener("click", () => this._addButton(name));
         card.appendChild(addButton);
 
@@ -411,8 +536,15 @@ class TelegramMenuPanel extends HTMLElement {
       }
     }
 
-    this.querySelector("#add-menu")?.addEventListener("click", () => this._addMenu());
-    this.querySelector("#save")?.addEventListener("click", () => this._saveConfig());
+    this.querySelector("#add-menu")?.addEventListener(
+      "click",
+      () => this._createMenu(),
+    );
+
+    this.querySelector("#save")?.addEventListener(
+      "click",
+      () => this._saveConfig(),
+    );
   }
 
   _escape(value) {
