@@ -44,6 +44,7 @@ Die bestehende Integration kann:
 - Menü-Nachricht und Tastaturtyp grafisch ändern
 - Buttons grafisch erstellen, bearbeiten und löschen
 - Änderungen über die Home-Assistant-WebSocket-API speichern
+- Button-Editor optisch überarbeitet: graue Button-Kästen mit Rahmen, abgerundeten Ecken, Abstand und dezenter Schattenwirkung
 
 ## 5. Grafischer Editor
 Das Panel bietet jetzt ausdrücklich:
@@ -94,6 +95,7 @@ Das Panel wird jetzt nach dem bewährten Switch-Manager-Prinzip als eingebautes 
 - Position/Reihe
 - bearbeiten
 - löschen
+- übersichtliche Darstellung der Buttons in abgesetzten grauen Kästen
 
 **Status: IMPLEMENTIERT / TESTEN**
 
@@ -123,7 +125,11 @@ Beispiel:
 **Status: SPÄTER / OPTIONAL**
 
 ## 8. Aktueller Test
-Der Benutzer hat bestätigt, dass das **Sidebar-Icon jetzt sichtbar ist**.
+Der Benutzer hat bestätigt, dass das **Sidebar-Icon jetzt sichtbar ist** und der grafische Editor korrekt geladen wird.
+
+Der grafische Editor wurde erfolgreich getestet. Die Darstellung der einzelnen Buttons wurde anschließend optisch verbessert: Jeder Button-Editor befindet sich jetzt in einem dezent grauen Kasten mit Rahmen, abgerundeten Ecken und leichtem Schatten. Die Funktionalität des Editors und der Telegram-Anbindung wurde dabei nicht verändert.
+
+Der aktuelle Entwicklungsstand ist **v0.0.11**. Die nächste Entwicklungsphase ist die direkte Zuordnung von Home-Assistant-Aktionen zu einzelnen Telegram-Buttons.
 
 Als Nächstes soll geprüft werden:
 1. Wird das Panel korrekt geladen?
@@ -159,4 +165,4 @@ Die Integrationsversion wird bei jedem veröffentlichten Entwicklungsstand erhö
 
 **Release:** v0.0.11
 
-**Aktueller Fokus:** Button-Editor optisch verbessern; danach Button-Aktionen integrieren.
+**Aktueller Fokus:** Pause nach erfolgreicher Überarbeitung des Button-Editors. Nächster Schritt: direkte Home-Assistant-Aktionen für Telegram-Buttons integrieren.
