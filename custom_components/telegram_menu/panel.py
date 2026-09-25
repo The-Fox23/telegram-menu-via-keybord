@@ -14,7 +14,7 @@ PANEL_NAME = "telegram-menu-panel"
 PANEL_ICON = "mdi:telegram"
 
 
-async def async_register_panel(hass: HomeAssistant) -> None:
+async def async_register_panel(hass: HomeAssistant, menus: dict) -> None:
     """Register the Telegram Menu sidebar panel."""
     panel_path = hass.config.path("custom_components", DOMAIN, "panel.js")
 
@@ -31,6 +31,7 @@ async def async_register_panel(hass: HomeAssistant) -> None:
         module_url=PANEL_URL,
         embed_iframe=False,
         require_admin=True,
+        config={"menus": menus},
     )
 
 
