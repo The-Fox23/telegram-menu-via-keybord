@@ -7,7 +7,7 @@
 - Geplanter Zielname: `telegram-menu-via-keyboard`
 - Integration Domain: `telegram_menu`
 - Anzeigename: **Telegram Menu via Keyboard**
-- Aktuelle Version: 0.0.8
+- Aktuelle Version: 0.0.9
 - Home Assistant Mindestversion laut `hacs.json`: **2026.1.0**
 - Abhängigkeiten: `telegram_bot`, `panel_custom`
 - Integrationstyp: `service`
@@ -150,5 +150,7 @@ Wenn das funktioniert, beginnt Schritt 4 mit den Button-Aktionen.
 - Home-Assistant-native UI nach Möglichkeit verwenden.
 
 **Letzte Aktualisierung:** 2026-09-25
+
+**Release:** v0.0.9
 
 **Aktueller Fokus:** Menü-/Button-Erstellung testen; danach Button-Aktionen integrieren.
